@@ -12,8 +12,6 @@
     	"type": "entry",
         "default": "",
         "description": "Password",
-        "visibility" : false,
-        "invisible_char" : "+",
         "tooltip": "Enter your diaspora*'s password"
   	},
 
