@@ -200,6 +200,16 @@ DiasporaNotif.prototype = {
 		        noNotifLabel.set_text(_("No Notification"));
 				this.notifArea.add(noNotifLabel, {row:0,col:0});	
 			}
+		}else{
+			let errorLabel = new St.Label({style_class:"errorLabel"});
+			if(this.notifications.error){
+				errorLabel.set_text(this.notifications.error);
+			}
+			else{
+				errorLabel.set_text(_("Technical error"));	
+			}
+	        
+			this.notifArea.add(errorLabel, {row:0,col:0});
 		}
 	},
 	
