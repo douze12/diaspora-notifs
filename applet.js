@@ -3,6 +3,8 @@ const Applet = imports.ui.applet;
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
 const Mainloop = imports.mainloop;
+const PopupMenu = imports.ui.popupMenu;
+const St = imports.gi.St;
 const Gettext = imports.gettext.domain('cinnamon-applets');
 const _ = Gettext.gettext;
 const AppletDir = imports.ui.appletManager.appletMeta['diaspora-notif@douze12'].path;
@@ -34,6 +36,7 @@ const APPLET_ICON_NAME = "diaspora_asterisk_32.png";
 const APPLET_ICON_NAME_ERROR = "diaspora_asterisk_32_error.png";
 const APPLET_ICON_NAME_NOTIF = "diaspora_asterisk_32_notif.png";
 const NOTIFS_FILE_NAME = "notifs.json";
+const NOTIFICATION_URL = "/notifications";
 
  
 function DiasporaNotif(metadata, orientation, panelHeight, instanceId) {
@@ -49,6 +52,8 @@ DiasporaNotif.prototype = {
  
         try {
 			global.log("Intitalisation");
+			
+			this.orientation = orientation;
 	
 			this.path = AppletDir + "/";
 			
@@ -57,6 +62,8 @@ DiasporaNotif.prototype = {
 			this.set_applet_tooltip(_("Diaspora* notifications"));
 	
 			this.bindSettings();
+			
+			this.buildMenu();
 			
 			this.loadNotifications();
 	
@@ -143,10 +150,79 @@ DiasporaNotif.prototype = {
 					global.log("Error : "+this.notifications.error);
 				}
 			}
+			this.displayNotifications();
 		} catch (e) {
 			global.logError(e);
 		}
-	}
+	},
+	
+	/**
+	 * Method which build the menu opened when the user click on the applet icon
+	 */
+	buildMenu : function(){
+		this.menuManager = new PopupMenu.PopupMenuManager(this);
+		this.menu = new Applet.AppletPopupMenu(this, this.orientation);
+		this.menuManager.addMenu(this.menu);
+		
+		this.notifArea = new St.Table({style_class:'notifArea'});
+		this.menu.addActor(this.notifArea);	
+	},
+	
+	displayNotifications: function(){
+		//delete the elements before refresh
+		let children = this.notifArea.get_children();
+        for (let i = 0; i < children.length; i++){
+            children[i].destroy();
+       	}
+		
+		//task name label
+		if(this.notifications && !this.notifications.error){
+			if(this.notifications.length > 0){
+				for(let i = 0; i < this.notifications.length; i++){
+					let notif = this.notifications[i];
+					
+					let notifLabel = new St.Label({style_class:"notifLabel"});
+					notifLabel.set_text(notif);
+					
+					let labelButton = new St.Button({child : notifLabel, style_class:'labelButton',x_align: St.Align.START});
+			        
+					this.notifArea.add(labelButton, {row:i,col:0});	
+					
+					//connect events
+					labelButton.connect('clicked', Lang.bind(this, function(){
+						global.log("Click notification");
+						this.onGoToDiaspora();
+					}));
+				}	
+			}
+			else{
+				let noNotifLabel = new St.Label({style_class:"noNotifLabel"});
+		        noNotifLabel.set_text(_("No Notification"));
+				this.notifArea.add(noNotifLabel, {row:0,col:0});	
+			}
+		}
+	},
+	
+	onGoToDiaspora:function(){
+		try{
+			//call the xdg_open program to open the diaspora website
+			[success, pid, stdin, stdout, stderr] = GLib.spawn_async_with_pipes(this.path, 
+				["/usr/bin/xdg-open",this._podUrl + NOTIFICATION_URL], null, GLib.SpawnFlags.DO_NOT_REAP_CHILD, null);
+			
+			//close the menu
+			this.menu.toggle();
+		} catch (e) {
+			global.logError(e);
+		}
+	},
+	
+	/**
+	 * Click on the applet icon in the command bar in order to open the menu
+	 */
+	on_applet_clicked : function(event) {
+		global.log("Toggle menu");
+		this.menu.toggle();
+	},
 };
  
 
