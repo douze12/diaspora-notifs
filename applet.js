@@ -51,7 +51,7 @@ DiasporaNotif.prototype = {
         Applet.IconApplet.prototype._init.call(this, orientation);
  
         try {
-			global.log("Intitalisation");
+			log("Intitalisation");
 			
 			this.orientation = orientation;
 	
@@ -67,11 +67,10 @@ DiasporaNotif.prototype = {
 			
 			this.loadNotifications();
 	
-			global.log("Settings : "+this._login);
-			global.log("END Intitialisation");
+			log("END Intitialisation");
         }
         catch (e) {
-            global.logError(e);
+            logError("Initialization error " + e);
         }
      },
 
@@ -90,7 +89,7 @@ DiasporaNotif.prototype = {
 	 * Method used to call the python script which extract the notifications
 	 */
 	loadNotifications : function(){
-		global.log("Call the notifications extractor");
+		log("Call the notifications extractor");
 		try{
 			//call the script
 			[success, pid, stdin, stdout, stderr] = GLib.spawn_async_with_pipes(this.path, 
@@ -101,7 +100,7 @@ DiasporaNotif.prototype = {
 			GLib.child_watch_add(GLib.PRIORITY_DEFAULT, pid, Lang.bind(this, this.onNotificationsExtracted));	
 
 		} catch (e) {
-			global.logError(e);
+			logError("Error when trying to call the notifications extractor script " + e);
 		}
 		
 		//call a loop to refesh the data after a delay set by the conf
@@ -117,12 +116,12 @@ DiasporaNotif.prototype = {
 	 */
 	onNotificationsExtracted: function(){
 		try{
-			global.log("Load notifications file");
+			log("Load notifications file");
 			
 			//get the notifications file created by the script
 		 	let file = Gio.file_new_for_path(this.path + NOTIFS_FILE_NAME);
 		 	if(!file.query_exists(null)){
-				global.log("File doesn't exists "+ this.path + NOTIFS_FILE_NAME);
+				log("File doesn't exists "+ this.path + NOTIFS_FILE_NAME);
 		 		this.set_applet_icon_path(this.path + APPLET_ICON_NAME_ERROR);
 		 		return;
 		 	}
@@ -147,12 +146,12 @@ DiasporaNotif.prototype = {
 				this.set_applet_icon_path(this.path + APPLET_ICON_NAME_ERROR);
 				if(this.notifications.error){
 					this.set_applet_tooltip(this.notifications.error);
-					global.log("Error : "+this.notifications.error);
+					log("Error : "+this.notifications.error);
 				}
 			}
 			this.displayNotifications();
 		} catch (e) {
-			global.logError(e);
+			logError("Error when trying to read notifications " + e);
 		}
 	},
 	
@@ -190,7 +189,6 @@ DiasporaNotif.prototype = {
 					
 					//connect events
 					labelButton.connect('clicked', Lang.bind(this, function(){
-						global.log("Click notification");
 						this.onGoToDiaspora();
 					}));
 				}	
@@ -222,7 +220,7 @@ DiasporaNotif.prototype = {
 			//close the menu
 			this.menu.toggle();
 		} catch (e) {
-			global.logError(e);
+			logError("Error when trying to call xdg-open " + e);
 		}
 	},
 	
@@ -230,11 +228,24 @@ DiasporaNotif.prototype = {
 	 * Click on the applet icon in the command bar in order to open the menu
 	 */
 	on_applet_clicked : function(event) {
-		global.log("Toggle menu");
 		this.menu.toggle();
 	},
 };
  
+ 
+ 
+/*------------------------
+ * Logging
+ * ------------------------*/
+function log(message) {
+	global.log(UUID + "::" + message);
+}
+
+function logError(message) {
+	global.logError(UUID + "::" + message);
+}
+
+
 
 function main(metadata, orientation, panelHeight, instanceId) {
     let myApplet = new DiasporaNotif(metadata, orientation, panelHeight, instanceId);
