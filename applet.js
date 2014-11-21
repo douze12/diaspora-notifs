@@ -182,8 +182,14 @@ DiasporaNotif.prototype = {
 				for(let i = 0; i < this.notifications.length; i++){
 					let notif = this.notifications[i];
 					
+					
+					let date = new Date(notif.time);
+					let dateStr = date.toLocaleFormat("%e/%m/%Y %H:%M");
+					
 					let notifLabel = new St.Label({style_class:"notifLabel"});
-					notifLabel.set_text(notif);
+					notifLabel.set_text(notif.text + " | " + dateStr);
+					
+					
 					
 					let labelButton = new St.Button({child : notifLabel, style_class:'labelButton',x_align: St.Align.START});
 			        

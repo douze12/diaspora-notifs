@@ -104,6 +104,14 @@ def getNotifications(url):
 	result = list()
 	if notifNodes != None:
 		for node in notifNodes:
+			#get the time node
+			timeNode = node.find(".//time")
+			time = timeNode.get("datetime")
+			print("Time : "+time)
+			
+			#remove the next to not have it in the text nodes
+			timeNode.text=""
+			
 			#get only the text nodes content
 			textNodes = node.xpath(".//text()")
 
@@ -113,7 +121,7 @@ def getNotifications(url):
 			#remove doubled white spaces
 			text = " ".join(text.split())
 
-			result.append(text)
+			result.append({"time" : time, "text" : text})
 			print(text)
 
 	return result
