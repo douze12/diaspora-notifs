@@ -31,7 +31,9 @@ const KEYS = [
 ];
 
 
-
+/**
+ * Constants
+ */
 const APPLET_ICON_NAME = "diaspora_asterisk_32.png";
 const APPLET_ICON_NAME_ERROR = "diaspora_asterisk_32_error.png";
 const APPLET_ICON_NAME_NOTIF = "diaspora_asterisk_32_notif.png";
@@ -67,10 +69,10 @@ DiasporaNotif.prototype = {
 			
 			this.loadNotifications();
 	
-			log("END Intitialisation");
+			log("END Initialisation");
         }
         catch (e) {
-            logError("Initialization error " + e);
+            logError("Initialisation error " + e);
         }
      },
 
